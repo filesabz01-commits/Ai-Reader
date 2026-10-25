@@ -18,9 +18,14 @@ jobs:
         run: |
           unzip -q AIReader.zip -d work
           cd work/AIReader
-          gradle assembleDebug --no-daemon --info
+          set +e
+          gradle assembleDebug --no-daemon --console=plain > ../build.log 2>&1
+          code=$?
+          grep -E "^e: " ../build.log | sed 's#file:///home/runner/work/[^/]*/[^/]*/work/AIReader/app/src/main/java/app/aireader/##' > ../errors.txt
+          cat ../errors.txt
+          while read -r l; do echo "::error::$l"; done < ../errors.txt
+          exit $code
       - uses: actions/upload-artifact@v4
         with:
           name: AIReader-APK
           path: work/AIReader/app/build/outputs/apk/debug/app-debug.apk
-          
